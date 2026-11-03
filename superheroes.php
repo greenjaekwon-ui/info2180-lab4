@@ -63,10 +63,35 @@ $superheroes = [
   ], 
 ];
 
-?>
+// Read the search query (Exercise 3).
+// The raw value is only ever compared, never printed; everything echoed
+// below goes through htmlspecialchars(), so injected markup can't run.
+$query = isset($_GET['query']) && is_string($_GET['query']) ? trim($_GET['query']) : '';
 
-<ul>
-<?php foreach ($superheroes as $superhero): ?>
-  <li><?= $superhero['alias']; ?></li>
-<?php endforeach; ?>
-</ul>
+// Blank query: return the full list of aliases
+if ($query === '') {
+    echo "<ul>";
+    foreach ($superheroes as $superhero) {
+        echo "<li>" . htmlspecialchars($superhero['alias'], ENT_QUOTES, 'UTF-8') . "</li>";
+    }
+    echo "</ul>";
+    exit;
+}
+
+// Search by name or alias (case-insensitive, exact match)
+$found = null;
+foreach ($superheroes as $superhero) {
+    if (strcasecmp($superhero['alias'], $query) === 0 ||
+        strcasecmp($superhero['name'], $query) === 0) {
+        $found = $superhero;
+        break;
+    }
+}
+
+if ($found) {
+    echo "<h3>" . htmlspecialchars($found['alias'], ENT_QUOTES, 'UTF-8') . "</h3>";
+    echo "<h4>" . htmlspecialchars($found['name'], ENT_QUOTES, 'UTF-8') . "</h4>";
+    echo "<p>" . htmlspecialchars($found['biography'], ENT_QUOTES, 'UTF-8') . "</p>";
+} else {
+    echo "<p class=\"not-found\">Superhero not found</p>";
+}
